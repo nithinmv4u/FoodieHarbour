@@ -12,17 +12,6 @@ const RestaurantCard = () => {
 const Shimmer = () => {
     return (
         <div className="max-h-screen">
-            <div className="bg-orange-700 p-4 text-gray-50 border-b-2 border-blue-800 flex justify-center items-center">
-                <input 
-                className='p-2 mx-4 rounded-lg' 
-                type="text" 
-                placeholder='Search' 
-                defaultValue=''
-                />
-                <a className="mx-4 hover:text-yellow-300" href="#"><span className="material-symbols-outlined">search</span> </a>
-                <button className="mx-4 hover:text-yellow-300" onClick={() => {
-                }}>Clear Search</button>
-            </div>
             <div className="container h-72 mx-auto p-4 flex flex-wrap justify-around m-2">
                 {
                     Array.from({length : 20}).map((_,index) => (

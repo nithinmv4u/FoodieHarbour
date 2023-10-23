@@ -37,6 +37,7 @@ const HomePage = () => {
             if (error.response && error.response.status === 401) {
                 // Handle 401 error, e.g., refresh the access token or redirect to login
                 console.log("Authentication error. Refresh token or redirect to login.");
+                logoutUser();
             } else {
                 // Handle other errors
                 console.error("Error:", error);
