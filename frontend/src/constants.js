@@ -1,0 +1,1 @@
+export const LOGO = './assets/FoodieHarbour_logo.png';
