@@ -39,42 +39,6 @@ export const AuthProvider = ({children}) => {
         }        
     }
 
-    // ---------refresh token-----------//
-    // const updateToken = async() =>{
-    //     console.log("update token called..");
-    //     let response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
-    //         method : 'POST',
-    //         headers : {
-    //             'Content-Type' : 'application/json',
-    //         },
-    //         body : JSON.stringify({'refresh' : authToken?.refresh}),
-    //     })
-    //     let data = await response.json()
-    //     if(response?.status === 200){
-    //         setUser(jwt_decode(data.access));
-    //         setAuthToken(data);
-    //         localStorage.setItem('authToken', JSON.stringify(data))
-    //     }else{
-    //         logoutUser()
-    //     }
-    //     if(loading){
-    //         setLoading(false);
-    //     }
-    // }
-
-    // useEffect(() =>{
-    //     const fourMinutes = 1000 * 60 * 4;
-    //     if(loading){
-    //         updateToken()
-    //     }
-    //     const interval = setInterval(() => {
-    //         if(authToken){
-    //             updateToken()
-    //         }
-    //     }, fourMinutes);
-    //     return () => clearInterval(interval);
-    // },[authToken,loading])
-
     useEffect(()=>{
         if(authToken){
             setUser(jwt_decode(authToken.access))
@@ -94,8 +58,9 @@ export const AuthProvider = ({children}) => {
         authToken : authToken,
         setUser : setUser,
         setAuthToken : setAuthToken,
+        setLoading : setLoading,
         loginUser : loginUser,
-        logoutUser : logoutUser, 
+        logoutUser : logoutUser,
     }
     return (
         <AuthContext.Provider value={contextData}>

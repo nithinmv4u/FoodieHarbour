@@ -3,35 +3,23 @@ import AuthContext from "../context/AuthContext";
 import jwt_decode from "jwt-decode";
 // import axiosInstance from "../utils/axiosInstance";
 import useAxios from "../utils/useAxios";
+import { Link } from "react-router-dom";
+import ItemCard from "../components/ItemCard";
+import Shimmer from "../components/ShimmerUI";
 
 const HomePage = () => {
     const {authToken, logoutUser} = useContext(AuthContext)
     const [notes, setNotes] = useState([]);
-    const api = useAxios()
+    const [items, setItems] = useState([]);
+    const notesApi = useAxios();
+    const itemsApi = useAxios();
 
-    console.log(notes);
+    console.log(items);
     console.log("access HomePage",jwt_decode(authToken.access));
-
-    // const getNotes = async () => {
-    //     console.log("get notes frontend");
-    //     const response = await fetch('http://127.0.0.1:8000/api/notes/', {
-    //         method : 'GET',
-    //         headers : {
-    //             'Content-Type' : 'application/json',
-    //             'Authorization' : 'Bearer ' + String(authToken?.access),
-    //         },
-    //     })
-    //     const data = await response.json()
-    //     if(response?.status === 200){
-    //         setNotes(data)
-    //     }else if(response?.statusText === "Unauthorized"){
-    //         logoutUser()
-    //     }
-    // }
 
     const getNotes = async() => {
         console.log("get Notes");
-        const response = await api.get('/api/notes/');
+        const response = await notesApi.get('/api/notes/');
         console.log("response : ",response);
         if(response.status === 200){
             setNotes(response.data)
@@ -40,24 +28,42 @@ const HomePage = () => {
         }
     }
 
+    const getItems = async () => {
+        try {
+            const response = await itemsApi.get('/items/');
+            console.log("item response: ", response);
+            setItems(response.data)
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                // Handle 401 error, e.g., refresh the access token or redirect to login
+                console.log("Authentication error. Refresh token or redirect to login.");
+            } else {
+                // Handle other errors
+                console.error("Error:", error);
+                logoutUser();
+            }
+            
+        }
+    }
+
     useEffect(() => {
         console.log("useEffect");
-        getNotes()
+        // getNotes()
+        getItems()
     },[]);
 
 
 
-    return notes.length ? (
-        <div>
-            <p>Homepage</p>
-            <ul>
-                { notes.map((note) =>(
-                        <li key={note?.id}>Item : { note?.body }</li>
-                ))}
-            </ul>
+    return items.length ? (
+        <div className='container mx-auto p-4 flex flex-wrap justify-around m-2' key={1}>
+        {
+            items.map((item) => {
+                return (<Link to={"/item/"+item?.id}><ItemCard {...item} key={item?.id}/></Link>)
+            })
+        }
         </div>
     ) : (
-        <p>no notes present</p>
+        <Shimmer/>
     )
 }
 
