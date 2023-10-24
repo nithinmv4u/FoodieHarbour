@@ -32,7 +32,11 @@ SECRET_KEY = 'django-insecure-kymnkm-$edi@%-p3u^8(eut-)hyeb9xu2_=yq(3bu#s#o3=auv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '144f-2-49-161-130.ngrok-free.app',
+]
 
 
 # Application definition
@@ -47,6 +51,7 @@ INSTALLED_APPS = [
 
     'authentication.apps.AuthenticationConfig',
     'restaurant.apps.RestaurantConfig',
+    'order_payment.apps.OrderPaymentConfig',
 
     'rest_framework',
     'rest_framework_simplejwt',
@@ -210,3 +215,8 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+STRIPE_PUBLISHABLE_KEY=env('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY=env('STRIPE_SECRET_KEY')
+
+STRIPE_WEBHOOK_SECRET=env('STRIPE_WEBHOOK_SECRET')
