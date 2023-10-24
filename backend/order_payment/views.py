@@ -51,6 +51,7 @@ class CreateOrderView(APIView):
 
         if serializer.is_valid():
             order_number = self.generate_order_number()
+            print(order_number)
             serializer.validated_data['order_id'] = order_number  
             serializer.save()
 
