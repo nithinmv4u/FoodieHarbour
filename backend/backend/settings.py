@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 import environ
 import os
+import stripe
 
 # Initialise environment variables
 env = environ.Env()
@@ -35,7 +36,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '144f-2-49-161-130.ngrok-free.app',
+    'e8e6-2-49-161-130.ngrok-free.app',
 ]
 
 
@@ -220,3 +221,5 @@ STRIPE_PUBLISHABLE_KEY=env('STRIPE_PUBLISHABLE_KEY')
 STRIPE_SECRET_KEY=env('STRIPE_SECRET_KEY')
 
 STRIPE_WEBHOOK_SECRET=env('STRIPE_WEBHOOK_SECRET')
+
+stripe.api_key =STRIPE_SECRET_KEY

@@ -10,6 +10,7 @@ from .models import Order
 from .serializers import OrderSerializer
 from datetime import datetime
 import random
+from decimal import Decimal
 
 endpoint_secret = STRIPE_WEBHOOK_SECRET
 
@@ -27,34 +28,52 @@ def stripe_webhook(request):
     except ValueError as e:
         return HttpResponse(status=400)
 
-    # Handle specific Stripe event types here
     if event['type'] == 'charge.refunded':
       charge = event['data']['object']
     elif event['type'] == 'payment_intent.succeeded':
       payment_intent = event['data']['object']
-    # ... handle other event types
     else:
       print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
 
-class CreateOrderView(APIView):
+class PaymentIntentView(APIView):
     def generate_order_number(self):
         now = datetime.now()
         timestamp = int(now.timestamp())
         random_number = random.randint(1000, 9999)
         order_number = f'{timestamp}{random_number}'
         return order_number
-
+    
     def post(self, request, format=None):
-        serializer = OrderSerializer(data=request.data)
+        product_name = request.data.get('product_name')
+        product_price = request.data.get('product_price')
+        delivery_place = request.data.get('delivery_place')
+        print("details ItemCard: ",product_name,product_price,delivery_place)
+        product_price_fils = int(Decimal(product_price) * 100)
+
+        # Create an order in your model
+        serializer = OrderSerializer(data={
+            'product_name': product_name,
+            'delivery_place': delivery_place,  # Adjust as needed
+            'price': product_price,
+        })
 
         if serializer.is_valid():
             order_number = self.generate_order_number()
-            print(order_number)
-            serializer.validated_data['order_id'] = order_number  
+            serializer.validated_data['order_id'] = order_number
             serializer.save()
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                # Create a PaymentIntent on the server
+                intent = stripe.PaymentIntent.create(
+                    amount=product_price_fils,
+                    currency='aed',  
+                    description=f'Payment for {product_name}',
+                )
+                client_secret = intent.client_secret  # Get the client secret
+                return Response({'client_secret': client_secret}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -6,7 +6,7 @@ class Order(models.Model):
     delivery_place = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     order_id = models.CharField(max_length=100, unique=True)
-    payment_intent_id = models.CharField(max_length=255, unique=True)
+    payment_intent_id = models.CharField(max_length=255, unique=False, null=True)
     is_paid = models.BooleanField(default=False)
     payment_date = models.DateTimeField(null=True, blank=True)
 
