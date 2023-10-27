@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import AuthContext from "../context/AuthContext";
 
 const CheckoutForm = ({ productName, productPrice, clientSecret }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const user = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,11 +14,10 @@ const CheckoutForm = ({ productName, productPrice, clientSecret }) => {
       payment_method: {
         card: elements.getElement(CardElement),
         billing_details: {
-          name: "Customer Name",
+          name: user.username,
         },
       },
     });
-
     if (result.error) {
       console.log(result.error.message);
     } else if (result.paymentIntent.status === "succeeded") {
@@ -26,12 +27,12 @@ const CheckoutForm = ({ productName, productPrice, clientSecret }) => {
 
   return (
     <div className="my-2">
-        <form onSubmit={handleSubmit} className="bg-white p-2">
+        <form onClick={handleSubmit} className="bg-white p-2">
             <div className="p-2">
             <CardElement/>
             </div>
             
-            <button className="bg-blue-700 rounded-md p-1 text-white" type="submit" disabled={!stripe}>
+            <button className="bg-blue-700 rounded-md p-1 text-white" type="button" disabled={!stripe}>
                 Pay AED {productPrice} for {productName}
             </button>
         </form>

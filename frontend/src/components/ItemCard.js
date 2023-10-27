@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Axios from "axios";
 import useAxios from "../utils/useAxios";
 import { IMG_CLDNRY } from "../constants";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import CheckoutForm from "./CheckoutForm"; 
+import AuthContext from "../context/AuthContext";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 console.log("stripePromise: ",stripePromise);
@@ -14,6 +15,8 @@ const ItemCard = ({ name, place, price }) => {
     const [isPaymentVisible, setPaymentVisible] = useState(false);
     const [clientSecret, setClientSecret] = useState(null)
     console.log("clientSecret: ",clientSecret);
+    const user = useContext(AuthContext);
+    const customer_id = 'cus_OtgDcU1JaWqmEh'
 
     const handleBuyNow = (e) => {
       e.preventDefault()
@@ -22,6 +25,7 @@ const ItemCard = ({ name, place, price }) => {
         product_name: name,
         delivery_place: place,
         product_price: price,
+        customer_name: customer_id,
       };
       axiosInstance
       .post("/order-payment/create-order/", orderData)

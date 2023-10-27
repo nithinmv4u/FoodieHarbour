@@ -11,6 +11,7 @@ from .serializers import OrderSerializer
 from datetime import datetime
 import random
 from decimal import Decimal
+import json
 
 endpoint_secret = STRIPE_WEBHOOK_SECRET
 
@@ -23,17 +24,31 @@ def stripe_webhook(request):
 
     try:
         event = stripe.Event.construct_from(
-            payload, stripe.api_key, endpoint_secret
+        json.loads(payload), stripe.api_key
         )
     except ValueError as e:
+        # Invalid payload
         return HttpResponse(status=400)
 
-    if event['type'] == 'charge.refunded':
-      charge = event['data']['object']
-    elif event['type'] == 'payment_intent.succeeded':
-      payment_intent = event['data']['object']
+    # Handle the event
+    if event.type == 'payment_intent.succeeded':
+        payment_intent = event.data.object
+        payment_intent_id = payment_intent['id']
+        print("payment_intent_id:-  ",payment_intent_id)
+        created_timestamp = payment_intent.created
+        created_datetime = datetime.utcfromtimestamp(created_timestamp)
+        try:
+            order = Order.objects.get(payment_intent_id=payment_intent_id)
+
+            order.mark_as_paid(payment_intent_id, created_datetime)
+
+        except Order.DoesNotExist:
+            print('Order not found for payment intent ID:', payment_intent_id)
+    elif event.type == 'charge.refunded':
+        charge = event['data']['object']
+        print("Refund: ", charge)
     else:
-      print('Unhandled event type {}'.format(event['type']))
+        print('Unhandled event type {}'.format(event.type))
 
     return HttpResponse(status=200)
 
@@ -49,6 +64,7 @@ class PaymentIntentView(APIView):
         product_name = request.data.get('product_name')
         product_price = request.data.get('product_price')
         delivery_place = request.data.get('delivery_place')
+        username = request.data.get('customer_name')
         print("details ItemCard: ",product_name,product_price,delivery_place)
         product_price_fils = int(Decimal(product_price) * 100)
 
@@ -62,7 +78,6 @@ class PaymentIntentView(APIView):
         if serializer.is_valid():
             order_number = self.generate_order_number()
             serializer.validated_data['order_id'] = order_number
-            serializer.save()
 
             try:
                 # Create a PaymentIntent on the server
@@ -70,7 +85,10 @@ class PaymentIntentView(APIView):
                     amount=product_price_fils,
                     currency='aed',  
                     description=f'Payment for {product_name}',
+                    customer=username,
                 )
+                serializer.validated_data['payment_intent_id'] = intent.id
+                serializer.save()
                 client_secret = intent.client_secret  # Get the client secret
                 return Response({'client_secret': client_secret}, status=status.HTTP_200_OK)
             except Exception as e:
